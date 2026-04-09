@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Masters Best Ball Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f4f2;color:#111;font-size:13px}
+.topbar{background:#1a5c2a;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.topbar h1{font-size:16px;font-weight:700}
+.topbar p{font-size:11px;opacity:0.7;margin-top:1px}
+.status{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.35);color:#fff;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.35);flex-shrink:0}
+.dot.live{background:#4ade80}
+.container{max-width:980px;margin:0 auto;padding:12px 10px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{padding:7px 16px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#6b7280;cursor:pointer;font-size:12px;font-weight:600}
+.tab.on{background:#1a5c2a;color:#fff;border-color:#1a5c2a}
+.round-tabs{display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.rtab{padding:5px 12px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#6b7280;cursor:pointer;font-size:12px;font-weight:600}
+.rtab.on{background:#1a5c2a;color:#fff;border-color:#1a5c2a}
+.refresh-btn{padding:5px 14px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;font-size:12px;font-weight:600}
+.refresh-btn:hover{background:#f3f4f6}
+.team-block{margin-bottom:22px}
+.team-title{background:#1a5c2a;color:#fff;text-align:center;font-size:14px;font-weight:700;padding:8px;border-radius:6px 6px 0 0;letter-spacing:.02em}
+.scorecard-wrap{overflow-x:auto;border:1px solid #bbb;border-top:none;border-radius:0 0 6px 6px}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{border:1px solid #ccc;text-align:center;padding:5px 3px;white-space:nowrap;font-size:12px;min-width:26px}
+.col-label{text-align:left;padding-left:8px;font-weight:600;min-width:130px}
+.row-hole th{background:#ddd;font-weight:700;font-size:11px}
+.row-hole th.col-label{background:#ddd}
+.row-par td{background:#ececec;font-weight:600}
+.row-par td.col-label{background:#ececec}
+.row-player td{background:#fff}
+.row-bestball td{background:#eef7f1;font-weight:700;color:#1a5c2a;border-top:2px solid #1a5c2a}
+.row-bestball td.col-label{color:#1a5c2a;background:#eef7f1}
+
+.eagle{background:#166534!important;color:#fff!important;font-weight:700}
+.birdie{background:#16a34a!important;color:#fff!important}
+.bogey{background:#dc2626!important;color:#fff!important}
+.dbl{background:#991b1b!important;color:#fff!important}
+.bb-eagle{background:#166534!important;color:#fff!important;font-weight:700}
+.bb-birdie{background:#16a34a!important;color:#fff!important;font-weight:700}
+.bb-bogey{background:#dc2626!important;color:#fff!important;font-weight:700}
+.bb-dbl{background:#991b1b!important;color:#fff!important;font-weight:700}
+.out-in{background:#ddd!important;font-weight:700!important;border-left:2px solid #aaa!important}
+.total-col{background:#ddd!important;font-weight:700!important;border-left:2px solid #aaa!important}
+.under{color:#166534!important;font-weight:700}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.section-label{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.ctrl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input[type=text]{padding:7px 11px;border:1px solid #d1d5db;border-radius:7px;font-size:13px;color:#111;outline:none;flex:1;min-width:160px}
+input[type=text]:focus{border-color:#1a5c2a}
+button.btn{padding:7px 14px;border-radius:7px;border:1px solid #d1d5db;background:#fff;color:#111;cursor:pointer;font-size:13px;font-weight:600}
+button.btn:hover{background:#f3f4f6}
+button.btn-green{background:#1a5c2a;color:#fff;border-color:#1a5c2a}
+button.btn-green:hover{background:#154a22}
+button.btn-red{color:#dc2626;border-color:#fca5a5}
+.player-row-s{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0}
+.player-row-s:last-of-type{border-bottom:none}
+.not-found{font-size:11px;color:#dc2626;margin-left:6px}
+.notice{font-size:12px;color:#6b7280;background:#f9fafb;border-radius:7px;padding:9px 12px;margin-top:10px;line-height:1.6}
+.err-bar{background:#fee2e2;color:#dc2626;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:10px}
+.loading-msg{text-align:center;padding:32px;color:#6b7280;font-size:13px}
+.thru{font-size:10px;color:#6b7280;margin-left:4px;font-weight:normal}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><h1>Masters Best Ball Tracker</h1><p>2026 Masters · Augusta National</p></div>
+  <div class="status"><span class="dot" id="dot"></span><span id="status-text">Loading...</span></div>
+</div>
+<div class="container">
+  <div class="tabs">
+    <button class="tab on" id="tab-tracker" onclick="setTab('tracker')">Scorecard</button>
+    <button class="tab" id="tab-setup" onclick="setTab('setup')">Setup</button>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+const PARS = [4,5,4,3,4,3,4,5,4, 4,4,3,5,4,5,3,4,4];
+const OUT_PAR = 36, IN_PAR = 36, TOT_PAR = 72;
+const ROUND_LABELS = ['R1 — Thu','R2 — Fri','R3 — Sat','R4 — Sun'];
+const URL = 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?league=pga&region=us&lang=en&contentorigin=espn&event=401811941';
+
+let S = {
+  tab: 'tracker', round: 0,
+  teams: JSON.parse(localStorage.getItem('bb26v6') || 'null') || [
+    { name: 'Team 1', players: ['Justin Rose','Nick Taylor','Sam Burns','Matt Fitzpatrick'] },
+    { name: 'Team 2', players: ['Jordan Spieth','Bryson DeChambeau','J.J. Spaun','Aldrich Potgieter'] }
+  ],
+  // name.toLowerCase() -> { id, rounds: [ holes[18], holes[18], ... ] }
+  players: {},
+  loading: false, lastFetch: null, err: null
+};
+function save(){ localStorage.setItem('bb26v6', JSON.stringify(S.teams)); }
+
+async function fetchScores(){
+  S.loading = true; S.err = null; updateStatus(); render();
+  try {
+    const r = await fetch(URL);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    const players = {};
+
+    for (const ev of (d.events || [])) {
+      for (const comp of (ev.competitions || [])) {
+        for (const c of (comp.competitors || [])) {
+          const name = ((c.athlete || {}).displayName || '').trim();
+          if (!name) continue;
+
+          // linescores[] = one entry per round
+          // Each round entry has .linescores[] = 18 holes with {value, period}
+          // period = hole number (1-18)
+          const rounds = [];
+          for (const rdLs of (c.linescores || [])) {
+            const holeArr = rdLs.linescores || [];
+            if (!holeArr.length) continue; // skip placeholder empty rounds
+            const holes = Array(18).fill(null);
+            for (const h of holeArr) {
+              const holeNum = h.period; // 1-indexed hole number
+              const strokes = h.value;
+              if (holeNum >= 1 && holeNum <= 18 && strokes != null) {
+                holes[holeNum - 1] = Number(strokes);
+              }
+            }
+            rounds.push(holes);
+          }
+          players[name.toLowerCase()] = { name, rounds };
+        }
+      }
+    }
+    S.players = players;
+    S.lastFetch = new Date();
+    S.loading = false;
+  } catch(e) {
+    S.err = 'Could not load scores: ' + e.message;
+    S.loading = false;
+  }
+  updateStatus(); render();
+}
+
+function findPlayer(name) {
+  const k = name.toLowerCase().trim();
+  if (S.players[k]) return S.players[k];
+  const last = k.split(' ').pop();
+  for (const [key, val] of Object.entries(S.players)) {
+    if (last.length > 3 && key.endsWith(last)) return val;
+    if (key.includes(k) || k.includes(key)) return val;
+  }
+  return null;
+}
+
+function getHoles(playerName) {
+  const pd = findPlayer(playerName);
+  if (!pd || !pd.rounds || !pd.rounds[S.round]) return Array(18).fill(null);
+  return pd.rounds[S.round];
+}
+
+function nineSum(holes, start) {
+  const v = holes.slice(start, start + 9).filter(s => s !== null && !isNaN(s));
+  return v.length ? v.reduce((a, b) => a + b, 0) : null;
+}
+function sCls(s, p) {
+  if (s === null) return '';
+  const d = s - p;
+  if (d <= -2) return 'eagle'; if (d === -1) return 'birdie';
+  if (d === 1) return 'bogey'; if (d >= 2) return 'dbl'; return '';
+}
+function bbCls(s, p) {
+  if (s === null) return '';
+  const d = s - p;
+  if (d <= -2) return 'bb-eagle'; if (d === -1) return 'bb-birdie';
+  if (d === 1) return 'bb-bogey'; if (d >= 2) return 'bb-dbl'; return '';
+}
+function fmtTot(s, p) {
+  if (s === null) return '';
+  const d = s - p;
+  if (d === 0) return 'E'; return d > 0 ? '+' + d : String(d);
+}
+function totCls(s, p) { return (s !== null && s - p < 0) ? 'under' : ''; }
+
+function buildScorecard(team) {
+  const pH = team.players.map(p => getHoles(p));
+  const bbH = Array(18).fill(null);
+  for (let h = 0; h < 18; h++) {
+    const pl = pH.map(ph => ph[h]).filter(s => s !== null && !isNaN(s));
+    if (pl.length) bbH[h] = Math.min(...pl);
+  }
+
+  let t = `<div class="team-block"><div class="team-title">${team.name}</div><div class="scorecard-wrap"><table>`;
+
+  // Hole header
+  t += `<tr class="row-hole"><th class="col-label">Hole</th>`;
+  for (let h = 1; h <= 9; h++) t += `<th>${h}</th>`;
+  t += `<th class="out-in">OUT</th>`;
+  for (let h = 10; h <= 18; h++) t += `<th>${h}</th>`;
+  t += `<th class="out-in">IN</th><th class="total-col">TOT</th></tr>`;
+
+  // Par row
+  t += `<tr class="row-par"><td class="col-label">Par</td>`;
+  PARS.slice(0,9).forEach(p => t += `<td>${p}</td>`);
+  t += `<td class="out-in">${OUT_PAR}</td>`;
+  PARS.slice(9).forEach(p => t += `<td>${p}</td>`);
+  t += `<td class="out-in">${IN_PAR}</td><td class="total-col">${TOT_PAR}</td></tr>`;
+
+  // Player rows
+  team.players.forEach((pName, pi) => {
+    const holes = pH[pi];
+    const thru = holes.filter(h => h !== null).length;
+    const outS = nineSum(holes, 0), inS = nineSum(holes, 9);
+    const totS = outS !== null && inS !== null ? outS + inS :
+                 outS !== null ? outS : inS !== null ? inS : null;
+    const thruLabel = thru > 0 && thru < 18 ? `<span class="thru">(${thru})</span>` : '';
+    t += `<tr class="row-player"><td class="col-label">${pName}${thruLabel}</td>`;
+    holes.slice(0,9).forEach((s,i) => { const c=sCls(s,PARS[i]); t+=`<td class="${c}">${s!==null?s:''}</td>`; });
+    t += `<td class="out-in">${outS !== null ? outS : ''}</td>`;
+    holes.slice(9).forEach((s,i) => { const c=sCls(s,PARS[9+i]); t+=`<td class="${c}">${s!==null?s:''}</td>`; });
+    t += `<td class="out-in">${inS !== null ? inS : ''}</td>`;
+    t += `<td class="total-col ${totCls(totS,TOT_PAR)}">${totS !== null ? totS : ''}</td></tr>`;
+  });
+
+  // Best ball row
+  const bbO = nineSum(bbH, 0), bbI = nineSum(bbH, 9);
+  const bbT = bbO !== null && bbI !== null ? bbO + bbI :
+              bbO !== null ? bbO : bbI !== null ? bbI : null;
+  t += `<tr class="row-bestball"><td class="col-label">Best Ball</td>`;
+  bbH.slice(0,9).forEach((s,i) => { const c=bbCls(s,PARS[i]); t+=`<td class="${c}">${s!==null?s:''}</td>`; });
+  t += `<td class="out-in">${bbO !== null ? bbO : ''}</td>`;
+  bbH.slice(9).forEach((s,i) => { const c=bbCls(s,PARS[9+i]); t+=`<td class="${c}">${s!==null?s:''}</td>`; });
+  t += `<td class="out-in">${bbI !== null ? bbI : ''}</td>`;
+  t += `<td class="total-col ${totCls(bbT,TOT_PAR)}">${bbT !== null ? fmtTot(bbT,TOT_PAR) : ''}</td></tr>`;
+  t += `</table></div></div>`;
+  return t;
+}
+
+function renderTracker() {
+  let h = `<div class="round-tabs"><div style="display:flex;gap:5px;flex-wrap:wrap">`;
+  ROUND_LABELS.forEach((l,i) => h += `<button class="rtab${S.round===i?' on':''}" onclick="setRound(${i})">${l}</button>`);
+  h += `</div><button class="refresh-btn" onclick="fetchScores()">&#8635; Refresh</button></div>`;
+  if (S.err) h += `<div class="err-bar">${S.err}</div>`;
+  if (S.loading) { h += `<div class="loading-msg">Fetching live scores...</div>`; return h; }
+  if (!S.teams.length) { h += `<div class="notice" style="text-align:center;padding:20px">Go to <strong>Setup</strong> to add your teams and players.</div>`; return h; }
+  for (const team of S.teams) h += buildScorecard(team);
+  return h;
+}
+
+function renderSetup() {
+  let h = '';
+  if (S.teams.length < 6) {
+    h += `<div class="card"><div class="section-label">Add a team</div><div class="ctrl-row">`;
+    h += `<input type="text" id="new-team" placeholder="Team name" style="max-width:300px"/>`;
+    h += `<button class="btn btn-green" onclick="addTeam()">Add team</button>`;
+    h += `</div></div>`;
+  }
+  S.teams.forEach((t, ti) => {
+    h += `<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">`;
+    h += `<span style="font-size:14px;font-weight:700">${t.name}</span>`;
+    h += `<button class="btn btn-red" onclick="removeTeam(${ti})">Remove team</button></div>`;
+    h += `<div class="section-label">Players</div>`;
+    t.players.forEach((p, pi) => {
+      const found = !S.lastFetch || !!findPlayer(p);
+      h += `<div class="player-row-s"><span>${p}${!found?'<span class="not-found"> — not found in ESPN field</span>':''}</span>`;
+      h += `<button class="btn btn-red" style="font-size:11px;padding:4px 10px" onclick="removePlayer(${ti},${pi})">Remove</button></div>`;
+    });
+    h += `<div class="ctrl-row" style="margin-top:10px">`;
+    h += `<input type="text" id="np-${ti}" placeholder='e.g. Scottie Scheffler' style="max-width:280px"/>`;
+    h += `<button class="btn" onclick="addPlayer(${ti})">Add player</button>`;
+    h += `</div></div>`;
+  });
+  h += `<div class="notice">Player names must match ESPN exactly — e.g. "Justin Rose", "Sam Burns", "Rory McIlroy".<br>After loading, players not found in the field will be flagged red. Scores auto-refresh every 3 minutes.</div>`;
+  return h;
+}
+
+function render() {
+  document.getElementById('content').innerHTML = S.tab === 'tracker' ? renderTracker() : renderSetup();
+}
+function updateStatus() {
+  const dot = document.getElementById('dot'), txt = document.getElementById('status-text');
+  if (!dot || !txt) return;
+  if (S.loading) { dot.className = 'dot'; txt.textContent = 'Loading...'; return; }
+  if (S.lastFetch) {
+    const m = Math.floor((Date.now() - S.lastFetch) / 60000);
+    dot.className = 'dot live';
+    txt.textContent = 'Live · ' + (m < 1 ? 'just now' : m + 'm ago');
+  } else { dot.className = 'dot'; txt.textContent = S.err ? 'Error' : 'Not loaded'; }
+}
+function setTab(t) {
+  S.tab = t;
+  document.getElementById('tab-tracker').className = 'tab' + (t==='tracker'?' on':'');
+  document.getElementById('tab-setup').className = 'tab' + (t==='setup'?' on':'');
+  render();
+}
+function setRound(r) { S.round = r; render(); }
+
+window.addTeam = () => { const el=document.getElementById('new-team'); const n=(el?.value||'').trim(); if(!n)return; S.teams.push({name:n,players:[]}); save(); render(); if(el)el.value=''; };
+window.removeTeam = ti => { if(confirm('Remove team "'+S.teams[ti].name+'"?')){ S.teams.splice(ti,1); save(); render(); } };
+window.addPlayer = ti => { const el=document.getElementById('np-'+ti); const n=(el?.value||'').trim(); if(!n)return; S.teams[ti].players.push(n); save(); render(); if(el)el.value=''; };
+window.removePlayer = (ti,pi) => { S.teams[ti].players.splice(pi,1); save(); render(); };
+window.fetchScores = fetchScores;
+
+render();
+fetchScores();
+setInterval(fetchScores, 3 * 60 * 1000);
+</script>
+</body>
+</html>
